@@ -32,7 +32,7 @@ public class GameMaster extends Canvas implements KeyListener {
   private int chipNum  = 3; // 丸いチップの数
   private int sChipNum  = 20; // 丸い小さいチップの数
   private int SBombNum = 6; // 丸いオブジェクトの数
-  private int diamNum = 8;
+  private int diamNum = 10;
   public static int mode = -1; // -1: タイトル画面, -2: ゲームオーバー, 0〜 ゲームステージ
   Chip  chip[] = new Chip[chipNum];
   Chip sChip[] = new Chip[sChipNum];
@@ -60,11 +60,11 @@ public class GameMaster extends Canvas implements KeyListener {
     SBomb[2] = new ScoreBomb(518,190,new Color(255,200,200));
     SBomb[3] = new ScoreBomb(455,275,new Color(255,150,0));
     for (i=0;i<3;i++) diam[i]= new Diam(477+42*(i-1),154);
-    for (i=3;i<diamNum;i++) diam[i]= new Diam(477+42*(i-5),110);
+    for (i=3;i<diamNum;i++) diam[i]= new Diam(477+42*(i-6),110);
 
-    imgTitle = getToolkit().getImage("img/Title.jpg");    // タイトル画面の画像のインポート
-    imgGaOv  = getToolkit().getImage("img/GameOver.jpg"); // ゲームオーバー画面の画像のインポート
-    muTitle  = Applet.newAudioClip(getClass().getResource("SE/title.wav")); // ゲーム開始時の音源のインポート
+    imgTitle = getToolkit().getImage("./img/Title.jpg");    // タイトル画面の画像のインポート
+    imgGaOv  = getToolkit().getImage("./img/GameOver.jpg"); // ゲームオーバー画面の画像のインポート
+    muTitle  = Applet.newAudioClip(getClass().getResource("./SE/title.wav")); // ゲーム開始時の音源のインポート
   }
 
   // ■ メソッド
@@ -105,6 +105,7 @@ public class GameMaster extends Canvas implements KeyListener {
       ftr.move(buf_gc,imgW, imgH);
       for (i=0;i<sChipNum;i++) sChip[i].move(buf_gc,imgW, imgH);
       for (i=1;i<4;i++) SBomb[i].move(buf_gc,imgW, imgH);
+      for (i=3;i<diamNum;i++) diam[i].move(buf_gc,i);
       ball.move(buf_gc,imgW, imgH);
       // buf_gc.drawString(String.valueOf(spring),700,300); // ばねのたわみと発射速度
       buf_gc.fillRect(757,421+spring,30,90-spring);
@@ -115,7 +116,7 @@ public class GameMaster extends Canvas implements KeyListener {
       }
       for (i=0;i<sChipNum;i++) if(sChip[i].hp>0) ball.collisionCheck(sChip[i],100);
       for (i=1;i<4;i++) ball.collisionCheck(SBomb[i]);
-      for (i=3;i<diamNum;i++) ball.collisionCheck(diam[i],1000);
+      for (i=3;i<diamNum;i++) if(ball.collisionCheck(diam[i],1000)==true) diam[i].card=true;
       ChangeMode();
       break;
     case 1: // 上の面
@@ -153,6 +154,7 @@ public class GameMaster extends Canvas implements KeyListener {
     for (i=0;i<chipNum;i++) chip[i].revive();
     for (i=0;i<sChipNum;i++) sChip[i].revive();
     for (i=0;i<4;i++) SBomb[i].revive();
+    for (i=3;i<diamNum;i++) diam[i].card=false;
   }
   public void ChangeMode() { // 面を強制的に変える管理者用コマンド
     if (ftr.f1flag==true) {
@@ -279,7 +281,7 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.drawPolygon(new int[] {286,286,318+4},new int[] {379-3,416-3,434-3},3); // 左三角
     buf_gc.drawPolygon(new int[] {674,674,642-4},new int[] {379-3,416-3,434-3},3); // 右三角
     /* 上のちょんちょん */
-    for (i=0;i<6;i++) dia(372+42*i,100);
+    for (i=-1;i<7;i++) dia(372+42*i,100);
   }
 
   public void map3() { // 第3面のマップ(今回実装なし)

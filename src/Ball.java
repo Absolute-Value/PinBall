@@ -9,7 +9,7 @@ import java.awt.*;
 class Ball extends Object{
   // フィールド変数
   double v,alph,beta;
-  Image ImBal = getToolkit().getImage("img/ball.png"); // ボールの画像をインポート
+  Image ImBal = getToolkit().getImage("./img/ball.png"); // ボールの画像をインポート
 
   Ball (int width, int height) {
     x=757; y=350;
@@ -123,7 +123,7 @@ class Ball extends Object{
       LineColl(710,379-3,714,379-3); // 右レーン上
       LineColl(714,379-3,714,432-3); // 右レーン右
       /* 上のちょんちょん */
-      for (int i=0;i<6;i++) DiaColl(372+42*i,100);
+      for (int i=-1;i<7;i++) DiaColl(372+42*i,100);
       if (750<x) { // 発射装置内
         dx = 0; x=757;
         if(410-33<y) {

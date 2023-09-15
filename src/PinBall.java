@@ -24,7 +24,7 @@ public class PinBall extends Frame implements Runnable {
   PinBall() {
     super("PinBall"); // 親クラスのコンストラクタを呼び出す
     int cW=800, cH=600; // キャンバスのサイズ
-    this.setSize(cW, cH); // フレームのサイズを指定
+    this.setSize(cW+10, cH+40); // フレームのサイズを指定
     this.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0)); // キャンバスをフレームに配置
 
     gm = new GameMaster(cW,cH);// GameMaster クラスのオブジェクトを作成
