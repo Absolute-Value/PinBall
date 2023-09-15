@@ -1,6 +1,16 @@
+/**
+ * ゲームの進行自体を取り仕切るクラス
+ * ・キーボード入力
+ * ・ゲーム内の各オブジェクトの管理
+ * ・ゲーム画面の描画
+ *
+ * @author Keisuke
+ */
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
+import java.applet.*;
 
 public class GameMaster extends Canvas implements KeyListener {
   // ■ フィールド変数
@@ -19,27 +29,42 @@ public class GameMaster extends Canvas implements KeyListener {
 
   Flipper ftr;  // フリッパー
   Ball ball;
-  private int chipNum  = 3;
-  private int SBombNum = 6;
+  private int chipNum  = 3; // 丸いチップの数
+  private int sChipNum  = 20; // 丸い小さいチップの数
+  private int SBombNum = 6; // 丸いオブジェクトの数
+  private int diamNum = 8;
+  public static int mode = -1; // -1: タイトル画面, -2: ゲームオーバー, 0〜 ゲームステージ
   Chip  chip[] = new Chip[chipNum];
+  Chip sChip[] = new Chip[sChipNum];
   ScoreBomb SBomb[] = new ScoreBomb[SBombNum];
+  Diam  diam[] = new Diam[diamNum];
   int chipPos[][] = {{219+4,231+4,243+4},{222+4,243+4,264+4}};
-  public static int mode = -1; // -1: タイトル画面, -2: ゲームオーバー, 1〜 ゲームステージ
 
-  GameMaster(int imgW, int imgH) {
-    this.imgW = imgW;
-    this.imgH = imgH;
-    setSize(imgW, imgH);
+  Image imgTitle, imgGaOv;
+  AudioClip muTitle;
 
-    addKeyListener(this);
+  GameMaster(int imgW, int imgH) { // コンストラクタ（アプレット本体が引数。ゲームの初期化を行う）
+    this.imgW = imgW; // 引数として取得した描画領域のサイズをローカルなプライベート変数に代入
+    this.imgH = imgH; // 引数として取得した描画領域のサイズをローカルなプライベート変数に代入
+    setSize(imgW, imgH); // 描画領域のサイズを設定
 
-    ftr = new Flipper();
-    ball = new Ball(imgW, imgH);
-    for (i=0;i<chipNum;i++) chip[i]  = new Chip(chipPos[0][i], chipPos[1][i]);
+    addKeyListener(this); // キーリスナー登録
+
+    ftr = new Flipper(); // フリッパーのオブジェクトの実体を作成
+    ball = new Ball(imgW, imgH); // ボールのオブジェクトの実体を作成
+    for (i=0;i<chipNum;i++) chip[i]  = new Chip(chipPos[0][i], chipPos[1][i], 7);
+    for (i=0;i<sChipNum/2;i++) sChip[i]  = new Chip(226,110+15*i,4);
+    for (i=sChipNum/2;i<sChipNum;i++) sChip[i]  = new Chip(726,120+15*(i-sChipNum/2),4);
     SBomb[0] = new ScoreBomb(455,284,new Color(255,200,200));
     SBomb[1] = new ScoreBomb(392,190,new Color(255,200,200));
     SBomb[2] = new ScoreBomb(518,190,new Color(255,200,200));
     SBomb[3] = new ScoreBomb(455,275,new Color(255,150,0));
+    for (i=0;i<3;i++) diam[i]= new Diam(477+42*(i-1),154);
+    for (i=3;i<diamNum;i++) diam[i]= new Diam(477+42*(i-5),110);
+
+    imgTitle = getToolkit().getImage("img/Title.jpg");    // タイトル画面の画像のインポート
+    imgGaOv  = getToolkit().getImage("img/GameOver.jpg"); // ゲームオーバー画面の画像のインポート
+    muTitle  = Applet.newAudioClip(getClass().getResource("SE/title.wav")); // ゲーム開始時の音源のインポート
   }
 
   // ■ メソッド
@@ -47,95 +72,89 @@ public class GameMaster extends Canvas implements KeyListener {
   // nullpointer exception が返ってくる問題を回避するために必要
   public void addNotify(){
     super.addNotify();
-    buf = createImage(imgW, imgH);
+    buf = createImage(imgW, imgH); // buffer を画面と同サイズで作成
     buf_gc = (Graphics2D)buf.getGraphics();
   }
 
   // ■ メソッド (Canvas)
   public void paint(Graphics g) {
-    buf_gc.setColor(Color.black);
-    buf_gc.fillRect( 0, 0, imgW, imgH);
+    buf_gc.setColor(Color.black);       // gc の色を黒に
+    buf_gc.fillRect( 0, 0, imgW, imgH); // gc を使って白の四角を描く（背景の初期化）
     switch (mode) {
-    case -2:
-      buf_gc.setColor(Color.white);
+    case -2: // ゲームオーバー画面（スペースキーを押されたらタイトル画面）
+      buf_gc.setColor(Color.white); // ゲームオーバー画面を描く
       buf_gc.drawString("PLAYER 1", imgW/2-20, imgH/2-10);
       buf_gc.drawString("GAME  OVER", imgW/2-20, imgH/2+10);
-      ball.hp=2; Score_1P=0; Score_2P=0;
-      if(ftr.sflag==true)mode=-1;
+      buf_gc.drawImage(imgGaOv,0,0,imgW,imgH,0,0,1280,960,this); // ゲームオーバー画面の画像を描画
+      ball.hp=2; Score_1P=0; Score_2P=0; // ボールの数とスコアを初期化
       break;
-    case -1:
-      buf_gc.setColor(Color.pink);
+    case -1: // タイトル画面（スペースキーを押されたらゲーム開始）
+      buf_gc.setColor(Color.pink); // タイトル画面を描く
       buf_gc.drawString("PIN", imgW/2-40, imgH/2-20);
       buf_gc.drawString("BALL", imgW/2-20, imgH/2);
       buf_gc.setColor(Color.cyan);
       buf_gc.drawString("Press SPACE bar", imgW/2-20, imgH/2+40);
+      buf_gc.drawImage(imgTitle,0,0,imgW,imgH,0,0,1280,960,this); // タイトル画面の画像を描画
+      muTitle.play(); // ゲーム開始時の音源を再生
       ObjReSet();
-      if(ftr.sflag==true)mode=1;
       break;
-    case 0:
-      spring=0;
-      map1();
-      Side();
-      ftr.move(buf_gc,imgW, imgH);
-      for (i=0;i<chipNum;i++) chip[i].move(buf_gc,imgW, imgH);
-      SBomb[0].revive();
-      SBomb[0].move(buf_gc,imgW, imgH);
-      ball.move(buf_gc,imgW, imgH);
-      for (i=0;i<chipNum;i++ ) if(chip[i].hp>0) ball.collisionCheck(chip[i],100);
-      for (i=0;i<1;i++) if (ball.collisionCheck(SBomb[i],100)==true) {
-        double v=Math.sqrt(Math.pow(ball.dx,2)+Math.pow(ball.dy,2));
-        double alph = Math.atan2(ball.dx,ball.dy);
-        double beta = Math.atan2(SBomb[i].x+SBomb[i].w-ball.x-ball.w,SBomb[i].y+SBomb[i].w-ball.y-ball.w);
-        ball.dx = -1.1*v*Math.sin(2*beta-alph);
-        ball.dy = -1.1*v*Math.cos(2*beta-alph);
-      }
-      ChangeMode();
-      break;
-    case 1:
+    case 0: // 下の面
       map2();
       Side();
+      for (i=3;i<diamNum;i++) if(Math.pow(ball.x+ball.w-diam[i].x-diam[i].w,2)+Math.pow(ball.y+ball.w-diam[i].y-diam[i].w,2)>Math.pow(ball.w+diam[i].w,2)) diam[i].revive();
       ftr.move(buf_gc,imgW, imgH);
-      for (i=1;i<4;i++) {
-        SBomb[i].revive();
-        SBomb[i].move(buf_gc,imgW, imgH);
-      }
+      for (i=0;i<sChipNum;i++) sChip[i].move(buf_gc,imgW, imgH);
+      for (i=1;i<4;i++) SBomb[i].move(buf_gc,imgW, imgH);
       ball.move(buf_gc,imgW, imgH);
       // buf_gc.drawString(String.valueOf(spring),700,300); // ばねのたわみと発射速度
       buf_gc.fillRect(757,421+spring,30,90-spring);
       if (ball.y>imgH) {
         ball.hp--; ball.revive();
-        if(ball.hp<0) mode = -2;
+        if(ball.hp<0) mode = -2; // ゲーム終了
         ObjReSet();
       }
-      for (i=1;i<4;i++) if (ball.collisionCheck(SBomb[i],100)==true) {
-        double v=Math.sqrt(Math.pow(ball.dx,2)+Math.pow(ball.dy,2));
-        double alph = Math.atan2(ball.dx,ball.dy);
-        double beta = Math.atan2(SBomb[i].x+SBomb[i].w-ball.x-ball.w,SBomb[i].y+SBomb[i].w-ball.y-ball.w);
-        ball.dx = -1.1*v*Math.sin(2*beta-alph);
-        ball.dy = -1.1*v*Math.cos(2*beta-alph);
-      }
+      for (i=0;i<sChipNum;i++) if(sChip[i].hp>0) ball.collisionCheck(sChip[i],100);
+      for (i=1;i<4;i++) ball.collisionCheck(SBomb[i]);
+      for (i=3;i<diamNum;i++) ball.collisionCheck(diam[i],1000);
       ChangeMode();
       break;
-    case 2:
+    case 1: // 上の面
+      spring=0;
+      map1();
+      Side();
+      for (i=0;i<3;i++) if(Math.pow(ball.x+ball.w-diam[i].x-diam[i].w,2)+Math.pow(ball.y+ball.w-diam[i].y-diam[i].w,2)>Math.pow(ball.w+diam[i].w,2)) diam[i].revive();
+      ftr.move(buf_gc,imgW, imgH);
+      for (i=0;i<chipNum;i++) chip[i].move(buf_gc,imgW, imgH);
+      SBomb[0].move(buf_gc,imgW, imgH);
+      ball.move(buf_gc,imgW, imgH);
+      for (i=0;i<chipNum;i++ ) if(chip[i].hp>0) ball.collisionCheck(chip[i],100);
+      ball.collisionCheck(SBomb[0]);
+      for (i=0;i<2;i++) ball.collisionCheck(diam[i*2],500);
+      ball.collisionCheck(diam[1],1000);
+      ChangeMode();
+      break;
+    case 2: // 第3面(今回実装なし)
       map3();
       Side();
       ball.move(buf_gc,imgW, imgH);
       ChangeMode();
     }
-    if (ftr.f5flag==true) {
+    if (ftr.f5flag==true) { // ボールをランダムに動かす管理者用コマンド
       ball.revive();
       ball.x=(int)(Math.random()*500)+200;
       ball.y=(int)(Math.random()*500);
       ball.dx=(int)(Math.random()*6)-3;
     }
-    if (Score_1P>TopScore) TopScore = Score_1P;
-    g.drawImage(buf, 0 ,0 ,this);
+    if (Score_1P>TopScore) TopScore = Score_1P; // トップスコアの更新
+    g.drawImage(buf, 0 ,0 ,this); // 表の画用紙に裏の画用紙 (buffer) の内容を貼り付ける
   }
-  public void ObjReSet() {
+  public void ObjReSet() { // オブジェクトの再配置
+    ball.revive();
     for (i=0;i<chipNum;i++) chip[i].revive();
-    SBomb[0].revive();
+    for (i=0;i<sChipNum;i++) sChip[i].revive();
+    for (i=0;i<4;i++) SBomb[i].revive();
   }
-  public void ChangeMode() {
+  public void ChangeMode() { // 面を強制的に変える管理者用コマンド
     if (ftr.f1flag==true) {
       mode = 0;
     } else if (ftr.f2flag==true) {
@@ -144,14 +163,14 @@ public class GameMaster extends Canvas implements KeyListener {
       mode = 2;
     }
   }
-  public void Side() {
+  public void Side() { // 左側の得点などを表示するエリア
     buf_gc.setColor(Color.white);
-    buf_gc.drawString("<TOP>", 80, 60);
-    buf_gc.drawString(String.valueOf(TopScore), 80, 70);
-    buf_gc.drawString("<Player 1>", 80, 150);
-    buf_gc.drawString(String.valueOf(Score_1P), 80, 160);
-    buf_gc.drawString("<Player 2>", 80, 280);
-    buf_gc.drawString(String.valueOf(Score_2P), 80, 290);
+    buf_gc.drawString("<TOP>", 80, 100);
+    buf_gc.drawString(String.valueOf(TopScore), 80, 110);
+    buf_gc.drawString("<Score>", 80, 200);
+    buf_gc.drawString(String.valueOf(Score_1P), 80, 210);
+    //buf_gc.drawString("<Player 2>", 80, 280);
+    //buf_gc.drawString(String.valueOf(Score_2P), 80, 290);
     buf_gc.drawString("<BALL>", 80, 440);
     buf_gc.drawString(String.valueOf(ball.hp), 100, 450);
     buf_gc.fillRect(200,0,10,imgH);
@@ -161,7 +180,7 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.fillRect(202,0,6,imgH);
     buf_gc.fillRect(792,0,6,imgH);
   }
-  public void map1() {
+  public void map1() { // 上面のマップ
     /* フリッパー左 */
     buf_gc.setColor(bgCol1);
     buf_gc.fillPolygon(new int[] {246,246,270,318,318}, new int[] {600,432,408,456,600},5);
@@ -224,7 +243,7 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.fillRect(640,72,4,36);
   }
 
-  public void map2(){ // 下
+  public void map2(){ // 下面のマップ
     /* 左上島 */
     buf_gc.setColor(bgCol1);
     buf_gc.fillPolygon(new int[] {246,246,264,282,318,318},new int[] {-1,17,48,48,12,-1},6);
@@ -252,18 +271,18 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.setColor(Color.black); buf_gc.fillRect(754,416,36,100);
     /* レーン */
     buf_gc.setColor(Color.pink);
-    buf_gc.fillPolygon(new int[] {286,286,318},new int[] {379,416,434},3); // 左三角
-    buf_gc.fillPolygon(new int[] {674,674,642},new int[] {379,416,434},3); // 右三角
+    buf_gc.fillPolygon(new int[] {286,286,318+4},new int[] {379-3,416-3,434-3},3); // 左三角
+    buf_gc.fillPolygon(new int[] {674,674,642-4},new int[] {379-3,416-3,434-3},3); // 右三角
     buf_gc.setColor(Color.white);
-    buf_gc.fillPolygon(new int[] {246,246,318,320,250,250},new int[] {379,432,474,470+1,428+1,379},6); // 左
-    buf_gc.fillPolygon(new int[] {714,714,642,640,710,710},new int[] {379,432,474,470+1,428+1,379},6); // 右
-    buf_gc.drawPolygon(new int[] {286,286,318},new int[] {379,416,434},3); // 左三角
-    buf_gc.drawPolygon(new int[] {674,674,642},new int[] {379,416,434},3); // 右三角
+    buf_gc.fillPolygon(new int[] {246,246,318+4,320+4,250,250},new int[] {379-3,432-3,474-3,470+1-3,428+1-3,379-3},6); // 左
+    buf_gc.fillPolygon(new int[] {714,714,642-4,640-4,710,710},new int[] {379-3,432-3,474-3,470+1-3,428+1-3,379-3},6); // 右
+    buf_gc.drawPolygon(new int[] {286,286,318+4},new int[] {379-3,416-3,434-3},3); // 左三角
+    buf_gc.drawPolygon(new int[] {674,674,642-4},new int[] {379-3,416-3,434-3},3); // 右三角
     /* 上のちょんちょん */
     for (i=0;i<6;i++) dia(372+42*i,100);
   }
 
-  public void map3() {
+  public void map3() { // 第3面のマップ(今回実装なし)
     buf_gc.setColor(bgCol2);
     buf_gc.fillRect(210,0,580,150);
     buf_gc.setColor(new Color(255,150,0));
@@ -276,14 +295,14 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.setColor(new Color(100,200,250)); buf_gc.fillRect(x,y+3,6,23);
     buf_gc.setColor(Color.white); buf_gc.drawLine(x,y+3,x,y+26); buf_gc.drawLine(x+6,y+3,x+6,y+26);
   }
+
   // ■ メソッド (Canvas)
-  public void update(Graphics gc) {
+  public void update(Graphics gc) { // repaint() に呼ばれる
     paint(gc);
   }
 
   // ■ メソッド (KeyListener)
-  public void keyTyped(KeyEvent ke) {
-  }
+  public void keyTyped(KeyEvent ke) {} // 今回は使わないが実装は必要
 
   public void keyPressed(KeyEvent ke) {
     int cd = ke.getKeyCode();
@@ -292,11 +311,12 @@ public class GameMaster extends Canvas implements KeyListener {
       ftr.lflag = true; // フラグを立てる
       break;
     case KeyEvent.VK_J: // [J]キーが押されたら
-      if(mode==1&&spring<40&&750<ball.x&&370<ball.y)spring++;
+      if(mode==0&&spring<40&&750<ball.x&&370<ball.y)spring++; // 徐々にばねを沈ませる
       ftr.rflag = true; // フラグを立てる
       break;
     case KeyEvent.VK_SPACE: // スペースキーが押されたら
       ftr.sflag = true; // フラグを立てる
+      if (mode<0) mode++;
       break;
     case KeyEvent.VK_F1: // [F1]キーが押されたら
       ftr.f1flag = true; // フラグを立てる
@@ -325,8 +345,8 @@ public class GameMaster extends Canvas implements KeyListener {
       break;
     case KeyEvent.VK_J: // [J]キーが離されたら
       ftr.rflag = false; // フラグを降ろす
-      if(spring>0&&ball.y>=410-35) ball.dy=-spring;
-      spring=0;
+      if(spring>0&&ball.y>=410-35) ball.dy=-spring; // ばねの力をボールに与える
+      spring=0; // ばねの沈みを元に戻す
       break;
     case KeyEvent.VK_SPACE: // スペースキーが離されたら
       ftr.sflag = false; // フラグを降ろす

@@ -1,2 +1,3 @@
 #!/bin/bash
-javac -sourcepath src -d classes src/PinBall.java
+cd src
+javac PinBall.java

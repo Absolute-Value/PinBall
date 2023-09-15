@@ -1,9 +1,15 @@
+/**
+ * ボールのクラス
+ *
+ * @author Keisuke
+ */
+
 import java.awt.*;
 
 class Ball extends Object{
   // フィールド変数
-  double v,alph,beta,dx,dy;
-  Image ImBal = getToolkit().getImage("./img/ball.png");
+  double v,alph,beta;
+  Image ImBal = getToolkit().getImage("img/ball.png"); // ボールの画像をインポート
 
   Ball (int width, int height) {
     x=757; y=350;
@@ -13,23 +19,25 @@ class Ball extends Object{
   }
 
   void move(Graphics buf,int width, int height) {
-    buf.setColor(new Color(200,200,200));
-    buf.fillOval(x, y, 2*w, 2*w);
-    buf.drawImage(ImBal,x,y,null);
-    dy+=0.1;
-    x=x+(int)dx;
-    y=y+(int)dy;
+    buf.setColor(new Color(200,200,200)); // ボールの色を設定
+    buf.fillOval(x, y, 2*w, 2*w); // ボールを描画
+    buf.drawImage(ImBal,x,y,null); // ボールの画像を貼り付ける
+    dy+=0.1; // 重力
+    x=x+(int)dx; // ボールをx方向に動かす
+    y=y+(int)dy; // ボールをy方向に動かす
     LineColl(210,0,210,600); // 左端当たり判定
     LineColl(790,0,790,600); // 右端当たり判定
 
-    v=Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
-    alph = Math.atan2(dx,dy);
-    /* フリッパー当たり判定 */
-    if (Flipper.lFlp==2) {
+    v=Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2)); // xとyの合成ベクトルの大きさを計算
+    alph = Math.atan2(dx,dy); // xとyのなすﾀﾝｼﾞｪﾝﾄを計算
+    /* 左フリッパー当たり判定 */
+    switch(Flipper.lFlp){
+    case 2: // 上がりきっている時
       if(y+w*(1+Math.cos(beta))-456-9<(474+18-456-9)*(x+w*(1-Math.sin(beta))-421-9)/(318+18-421-9)) Line45Coll(336-3,474,431,456);
-      ballColl(431-1-9,456,9);
+      ballColl(431-1-9,456,9); // 左フリッパー右端の丸
       if(y+w*(1-Math.cos(beta))-456-9>(474+18-456-9)*(x+w*(1+Math.sin(beta))-421-9)/(318+18-421-9)) Line225Coll(336+9,510-2,431,456+18);
-    } else if (Flipper.lFlp==1) {
+      break;
+    case 1: // 上がっている途中
       if(318+18<x&&x<436&&y+w*(1-Math.cos(beta))-456-9>(474+18-456-9)*(x+w*(1+Math.sin(beta))-421-9)/(318+18-421-9)&&y+w*(1+Math.cos(beta))-476<(528-476)*(x+w*(1-Math.sin(beta))-345)/(431-345)) {
         if(y+2*w<434) {
           dx=1; dy=-5;
@@ -40,17 +48,22 @@ class Ball extends Object{
         } else {
           dx=-1; dy=-10;
         }
+        break;
       }
-    } else {
+    case 0: // 上がってない時
       if(y+w*(1+Math.cos(beta))-474-18<(528+9-474-18)*(x+w*(1-Math.sin(beta))-318-18)/(419+9-318-18)) Line135Coll(345,476,431,528);
-      ballColl(431-3-9,528,9);
+      ballColl(431-3-9,528,9); // 左フリッパー右端の丸
       if(y+w*(1-Math.cos(beta))-474-18>(528+9-474-18)*(x+w*(1+Math.sin(beta))-318-18)/(419+9-318-18)) Line315Coll(336-3,510,431-4,528+18);
     }
-    if (Flipper.rFlp==2) {
+    ballColl(318,474,18); // 左フリッパー左側の丸
+    /* 右フリッパー当たり判定 */
+    switch(Flipper.rFlp){
+    case 2: // 上がりきっている時
       if(y+w*(1+Math.cos(beta))-456-9<(474+18-456-9)*(x+w*(1-Math.sin(beta))-521-9)/(606+18-521-9)) Line135Coll(529,456,624+3,474);
-      ballColl(529+1-9,456,9);
+      ballColl(529+1-9,456,9); // 右フリッパー左端の丸
       if(y+w*(1-Math.cos(beta))-456-9>(474+18-456-9)*(x+w*(1+Math.sin(beta))-521-9)/(606+18-521-9)) Line315Coll(529,456+18,624-9,510-2);
-    } else if (Flipper.rFlp==1) {
+      break;
+    case 1: // 上がっている途中
       if(524-2*w<x&&x<642-18&&y+w*(1-Math.cos(beta))-456-9>(474+18-456-9)*(x+w*(1+Math.sin(beta))-521-9)/(606+18-521-9)&&y+w*(1+Math.cos(beta))-476<(528-476)*(x+w*(1-Math.sin(beta))-345)/(431-345)) {
         if(y+2*w<434) {
           dx=1-v*0.27; dy=-5-0.75*v;
@@ -62,18 +75,71 @@ class Ball extends Object{
           dx=-1-v*0.1; dy=-10-0.9*v;
         }
       }
-    } else {
+      break;
+    case 0: // 上がってない時
       if(y+w*(1+Math.cos(beta))-474-18<(528+9-474-18)*(x+w*(1-Math.sin(beta))-606-18)/(523+9-606-18)) Line45Coll(529,528,615,476);
-      ballColl(529+3-9,528,9);
+      ballColl(529+3-9,528,9); // 右フリッパー左端の丸
       if(y+w*(1-Math.cos(beta))-474-18>(528+9-474-18)*(x+w*(1+Math.sin(beta))-606-18)/(523+9-606-18)) Line225Coll(529+4,528+18,624+3,510);
     }
-    ballColl(318,474,18);
-    ballColl(606,474,18);
-    switch(GameMaster.mode){
-    case 0: // 上ステージ
-      if (y>height) {
+    ballColl(606,474,18); // 右フリッパー右端の丸
+    switch(GameMaster.mode){ // modeごとに分岐
+    case 0: // 下ステージ当たり判定
+      if (y<-15) {
         GameMaster.mode=1;
-        y=y-height;
+        y=height+y;
+        break;
+      }
+      /* 左端 */
+      LineColl(246,-30,246,17); // 左上の島直線左
+      Line315Coll(246,17,264,48); // 左上の島左下斜め45
+      LineColl(264,48,282,48); // 左上の島直線中
+      Line225Coll(282,48,318,12); // 左上の島右下斜め45
+      LineColl(318,-30,318,12); // 左上の島直線右
+      Line135Coll(210,48,226,76); // 左上斜め30
+      LineColl(226,76,226,276); // 左中直線
+      Line135Coll(226,276,250,300); // 左中斜め45
+      Line135Coll(210,492,318,600); // 左下斜め45
+      /* 右端 */
+      LineColl(642,0,642,12); // 右上直線
+      Line315Coll(642,12,734,104); // 右上斜め
+      LineColl(734,104,734,276); // 右中直線
+      Line45Coll(710, 300, 734, 276); // 右中斜め135
+      Line315Coll(710,300,750,340); // 右中斜め45
+      LineColl(750,340,750,492); // 右下直線
+      Line45Coll(642, 600, 750, 492); // 右下斜め45
+      /* レーン */
+      LineColl(246,379-3,246,432-3); // 左レーン左
+      LineColl(246,379-3,250,379-3); // 左レーン上
+      LineColl(250,379-3,250,429-3); // 左レーン右
+      Line135Coll(250,428+1-3,320+4,470+1-3); // 左レーン斜め右上
+      if (y+w*(1+Math.cos(beta))-397.5-3>(434-397.5)*(x+w*(1-Math.sin(beta))-286)/(318+4-286)) Line315Coll(286,416-3,318+4,434-3); // 左レーン三角左下
+      LineColl(286,379-3,286,416-3); // 左レーン三角左
+      if (y+w*(1-Math.cos(beta))-397.5-3<(434-397.5)*(x+w*(1+Math.sin(beta))-286)/(318+4-286)) Line135Coll(286,379-3,318+4,434-3); // 左レーン三角右上
+      if (y+w*(1-Math.cos(beta))-397.5-3<(434-397.5)*(x+w*(1+Math.sin(beta))-674)/(642-4-674)) Line45Coll(642-4,434-3,674,379-3); // 右レーン三角左上
+      LineColl(674,379-3,674,416-3); // 右レーン三角右
+      if (y+w*(1+Math.cos(beta))-397.5-3>(434-397.5)*(x+w*(1-Math.sin(beta))-674)/(642-4-674)) Line225Coll(642-4,434-3,674,416-3); // 右レーン三角右下
+      Line45Coll(642-4,470+1-3,710,428+1-3);// 右レーン斜め左上
+      LineColl(710,379-3,710,429-3); // 右レーン左
+      LineColl(710,379-3,714,379-3); // 右レーン上
+      LineColl(714,379-3,714,432-3); // 右レーン右
+      /* 上のちょんちょん */
+      for (int i=0;i<6;i++) DiaColl(372+42*i,100);
+      if (750<x) { // 発射装置内
+        dx = 0; x=757;
+        if(410-33<y) {
+          dy = -0.5*dy;
+          y = 410-33;
+        }
+      }
+      if (y<0) {
+        GameMaster.mode=1;
+        y=height;
+      }
+      break;
+    case 1: // 上ステージ当たり判定
+      if (y>height) { // 下端
+        GameMaster.mode=0; // 下ステージへ切り替え
+        y=y-height;        // 下ステージ上へ
         break;
       }
       /* 左上曲線 */
@@ -126,59 +192,7 @@ class Ball extends Object{
       if (222<y&&750<x) { // 発射装置内
         dx = 0; x=757;
       }
-      break;
-    case 1: // 下ステージ
-      if (y<-15) {
-        GameMaster.mode=0;
-        y=height+y;
-        break;
-      }
-      /* 左端 */
-      LineColl(246,-30,246,17); // 左上の島直線左
-      Line315Coll(246,17,264,48); // 左上の島左下斜め45
-      LineColl(264,48,282,48); // 左上の島直線中
-      Line225Coll(282,48,318,12); // 左上の島右下斜め45
-      LineColl(318,-30,318,12); // 左上の島直線右
-      Line135Coll(210,48,226,76); // 左上斜め30
-      LineColl(226,76,226,276); // 左中直線
-      Line135Coll(226,276,250,300); // 左中斜め45
-      Line135Coll(210,492,318,600); // 左下斜め45
-      /* 右端 */
-      LineColl(642,0,642,12); // 右上直線
-      Line315Coll(642,12,734,104); // 右上斜め
-      LineColl(734,104,734,276); // 右中直線
-      Line45Coll(710, 300, 734, 276); // 右中斜め135
-      Line315Coll(710,300,750,340); // 右中斜め45
-      LineColl(750,340,750,492); // 右下直線
-      Line45Coll(642, 600, 750, 492); // 右下斜め45
-      /* レーン */
-      LineColl(246,379,246,432); // 左レーン左
-      LineColl(246,379,250,379); // 左レーン上
-      LineColl(250,379,250,429); // 左レーン右
-      Line135Coll(250,428+1,320,470+1); // 左レーン斜め右上
-      if (y+w*(1+Math.cos(beta))-397.5>(434-397.5)*(x+w*(1-Math.sin(beta))-286)/(318-286)) Line315Coll(286,416,318,434); // 左レーン三角左下
-      LineColl(286,379,286,416); // 左レーン三角左
-      if (y+w*(1-Math.cos(beta))-397.5<(434-397.5)*(x+w*(1+Math.sin(beta))-286)/(318-286)) Line135Coll(286,379,318,434); // 左レーン三角右上
-      if (y+w*(1-Math.cos(beta))-397.5<(434-397.5)*(x+w*(1+Math.sin(beta))-674)/(642-674)) Line45Coll(642,434,674,379); // 右レーン三角左上
-      LineColl(674,379,674,416); // 右レーン三角右
-      if (y+w*(1+Math.cos(beta))-397.5>(434-397.5)*(x+w*(1-Math.sin(beta))-674)/(642-674)) Line225Coll(642,434,674,416); // 右レーン三角右下
-      Line45Coll(642,470+1,710,428+1);// 右レーン斜め左上
-      LineColl(710,379,710,429); // 右レーン左
-      LineColl(710,379,714,379); // 右レーン上
-      LineColl(714,379,714,432); // 右レーン右
-      /* 上のちょんちょん */
-      for (int i=0;i<6;i++) DiaColl(372+42*i,100);
-      if (750<x) { // 発射装置内
-        dx = 0; x=757;
-        if(410-33<y) {
-          dy = -0.5*dy;
-          y = 410-33;
-        }
-      }
-      if (y<0) {
-        GameMaster.mode=0;
-        y=height;
-      }
+      if (y<72) y=72; // 上端
     }
   }
 
@@ -187,7 +201,7 @@ class Ball extends Object{
     dx=0; dy=0;
   }
 
-  void LineColl (int x1,int y1,int x2,int y2) {
+  void LineColl (int x1,int y1,int x2,int y2) { // 斜めでない直線の当たり判定
     if(x1==x2 && x1-2*w<x && x<x1 && y1-w<=y && y<=y2-w) {
       dx *= -0.9;
       if (x<=x1-w) x = x1-2*w;  else x = x1;
@@ -197,39 +211,46 @@ class Ball extends Object{
     }
   }
 
-  void Line45Coll (int x1, int y1, int x2, int y2) {
+  void Line45Coll (int x1, int y1, int x2, int y2) { // ／の左上の当たり判定
     beta=Math.atan2(x1-x2,y1-y2);
     if(x1-15<=x&&x<=x2-15&&y2-30<=y&&y<y1&&y+w*(1+Math.cos(beta))-y2>=(y1-y2)*(x+w*(1-Math.sin(beta))-x2)/(x1-x2)) {
-      dx=0.95*v*Math.sin(2*beta-alph);
-      dy=0.95*v*Math.cos(2*beta-alph);
+      Vect();
     }
   }
 
-  void Line135Coll (int x1, int y1, int x2, int y2) {
+  void Line135Coll (int x1, int y1, int x2, int y2) { // ＼の右上の当たり判定
     beta=Math.atan2(x2-x1,y2-y1);
     if(x1-15<=x&&x<=x2-15&&y1-30<=y&&y<y2&&y+w*(1+Math.cos(beta))-y1>=(y2-y1)*(x+w*(1-Math.sin(beta))-x1)/(x2-x1)) {
-      dx=0.95*v*Math.sin(2*beta-alph);
-      dy=0.95*v*Math.cos(2*beta-alph);
+      Vect();
     }
   }
 
-  void Line225Coll (int x1, int y1, int x2, int y2) {
+  void Line225Coll (int x1, int y1, int x2, int y2) { // ／の右下の当たり判定
     beta=Math.atan2(x1-x2,y1-y2);
     if(x1-15<=x&&x<=x2-15&&y2-30<=y&&y<y1&&y+w*(1-Math.cos(beta))-y2<=(y1-y2)*(x+w*(1+Math.sin(beta))-x2)/(x1-x2)) {
-      dx=0.95*v*Math.sin(2*beta-alph);
-      dy=0.95*v*Math.cos(2*beta-alph);
+      Vect();
     }
   }
 
-  void Line315Coll (int x1, int y1, int x2, int y2) {
+  void Line315Coll (int x1, int y1, int x2, int y2) { //  ＼の左下の当たり判定
       beta=Math.atan2(x2-x1,y2-y1);
       if(x1-15<=x&&x<=x2-15&&y1-30<=y&&y<y2&&y+w*(1-Math.cos(beta))-y1<=(y2-y1)*(x+w*(1+Math.sin(beta))-x1)/(x2-x1)) {
-        dx=0.95*v*Math.sin(2*beta-alph);
-        dy=0.95*v*Math.cos(2*beta-alph);
+        Vect();
       }
     }
 
-  void DiaColl (int a,int b) {
+  void Vect() { // 斜めの直線衝突時に計算して速度を与える
+    if (v<1.5) {
+      dx=v*Math.sin(2*beta-alph);
+      dy=v*Math.cos(2*beta-alph);
+    }
+    else {
+      dx=0.9*v*Math.sin(2*beta-alph);
+      dy=0.9*v*Math.cos(2*beta-alph);
+    }
+  }
+
+  void DiaColl (int a,int b) { // 上のちょんちょん当たり判定
     LineColl(a,b+3,a,b+23);  LineColl(a+6,b+3,a+6,b+23);
     ballColl(a, b, 3);  ballColl(a,b+20,3);
   }

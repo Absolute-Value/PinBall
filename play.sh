@@ -1,3 +1,3 @@
 #!/bin/bash
-cd classes
+cd src
 java PinBall
