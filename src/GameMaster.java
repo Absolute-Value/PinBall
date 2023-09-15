@@ -11,16 +11,19 @@ public class GameMaster extends Canvas implements KeyListener {
 
   Color bgCol1 = new Color(60,0,240);
   Color bgCol2 = new Color(0,250,0);
-  Color FlpCol = new Color(100,200,250);
   int TopScore = 0;
   static int Score_1P = 0;
   static int Score_2P = 0;
-  public static int lFlp, rFlp;
   private int i;
+  private int spring;
 
-  Fighter ftr;  //自機
+  Flipper ftr;  // フリッパー
   Ball ball;
-  Chip  chip[] = new Chip[2];
+  private int chipNum  = 3;
+  private int SBombNum = 6;
+  Chip  chip[] = new Chip[chipNum];
+  ScoreBomb SBomb[] = new ScoreBomb[SBombNum];
+  int chipPos[][] = {{219+4,231+4,243+4},{222+4,243+4,264+4}};
   public static int mode = -1; // -1: タイトル画面, -2: ゲームオーバー, 1〜 ゲームステージ
 
   GameMaster(int imgW, int imgH) {
@@ -30,10 +33,13 @@ public class GameMaster extends Canvas implements KeyListener {
 
     addKeyListener(this);
 
-    ftr = new Fighter();
+    ftr = new Flipper();
     ball = new Ball(imgW, imgH);
-    chip[0] = new Chip(213, 200);
-    chip[1] = new Chip(213, 220);
+    for (i=0;i<chipNum;i++) chip[i]  = new Chip(chipPos[0][i], chipPos[1][i]);
+    SBomb[0] = new ScoreBomb(455,284,new Color(255,200,200));
+    SBomb[1] = new ScoreBomb(392,190,new Color(255,200,200));
+    SBomb[2] = new ScoreBomb(518,190,new Color(255,200,200));
+    SBomb[3] = new ScoreBomb(455,275,new Color(255,150,0));
   }
 
   // ■ メソッド
@@ -54,30 +60,58 @@ public class GameMaster extends Canvas implements KeyListener {
       buf_gc.setColor(Color.white);
       buf_gc.drawString("PLAYER 1", imgW/2-20, imgH/2-10);
       buf_gc.drawString("GAME  OVER", imgW/2-20, imgH/2+10);
+      ball.hp=2; Score_1P=0; Score_2P=0;
+      if(ftr.sflag==true)mode=-1;
+      break;
     case -1:
       buf_gc.setColor(Color.pink);
       buf_gc.drawString("PIN", imgW/2-40, imgH/2-20);
       buf_gc.drawString("BALL", imgW/2-20, imgH/2);
       buf_gc.setColor(Color.cyan);
       buf_gc.drawString("Press SPACE bar", imgW/2-20, imgH/2+40);
+      ObjReSet();
+      if(ftr.sflag==true)mode=1;
       break;
     case 0:
-
+      spring=0;
       map1();
       Side();
-      Flipper();
-      for (i = 0; i < 2; i++) {
-        chip[i].revive();
-        chip[i].move(buf_gc,imgW, imgH);
-      }
+      ftr.move(buf_gc,imgW, imgH);
+      for (i=0;i<chipNum;i++) chip[i].move(buf_gc,imgW, imgH);
+      SBomb[0].revive();
+      SBomb[0].move(buf_gc,imgW, imgH);
       ball.move(buf_gc,imgW, imgH);
+      for (i=0;i<chipNum;i++ ) if(chip[i].hp>0) ball.collisionCheck(chip[i],100);
+      if(ball.collisionCheck(SBomb[0],100)==true) {
+        if (Math.abs(SBomb[0].x+25-ball.x-15)<=3) ball.dy = -1*ball.dy;
+        else if (Math.abs(SBomb[0].y+25-ball.y-15)<=3) ball.dx = -1*ball.dx;
+        else {
+          ball.dx = -1*ball.dx;
+          ball.dy = -1*ball.dy;
+        }
+      }
       ChangeMode();
       break;
     case 1:
       map2();
       Side();
-      Flipper();
+      ftr.move(buf_gc,imgW, imgH);
+      for (i=1;i<4;i++) {
+        SBomb[i].revive();
+        SBomb[i].move(buf_gc,imgW, imgH);
+      }
       ball.move(buf_gc,imgW, imgH);
+      buf_gc.drawString(String.valueOf(spring),700,300);
+      buf_gc.fillRect(757,421+spring,30,90-spring);
+      if (ball.y>imgH) {
+        ball.hp--; ball.revive();
+        if(ball.hp<0) mode = -2;
+        ObjReSet();
+      }
+      for (i=1;i<4;i++) if (ball.collisionCheck(SBomb[i],100)==true) {
+        ball.dx = -1*ball.dx;
+        ball.dy = -1*ball.dy;
+      }
       ChangeMode();
       break;
     case 2:
@@ -86,10 +120,19 @@ public class GameMaster extends Canvas implements KeyListener {
       ball.move(buf_gc,imgW, imgH);
       ChangeMode();
     }
-    if (ftr.f5flag==true) ball.revive();
+    if (ftr.f5flag==true) {
+      ball.revive();
+      ball.x=(int)(Math.random()*500)+200;
+      ball.y=(int)(Math.random()*500);
+      ball.dx=(int)(Math.random()*6)-3;
+    }
+    if (Score_1P>TopScore) TopScore = Score_1P;
     g.drawImage(buf, 0 ,0 ,this);
   }
-
+  public void ObjReSet() {
+    for (i=0;i<chipNum;i++) chip[i].revive();
+    SBomb[0].revive();
+  }
   public void ChangeMode() {
     if (ftr.f1flag==true) {
       mode = 0;
@@ -102,13 +145,13 @@ public class GameMaster extends Canvas implements KeyListener {
   public void Side() {
     buf_gc.setColor(Color.white);
     buf_gc.drawString("<TOP>", 80, 60);
-    buf_gc.drawString("000000", 80, 70);
+    buf_gc.drawString(String.valueOf(TopScore), 80, 70);
     buf_gc.drawString("<Player 1>", 80, 150);
-    buf_gc.drawString("000000", 80, 160);
+    buf_gc.drawString(String.valueOf(Score_1P), 80, 160);
     buf_gc.drawString("<Player 2>", 80, 280);
-    buf_gc.drawString("000000", 80, 290);
+    buf_gc.drawString(String.valueOf(Score_2P), 80, 290);
     buf_gc.drawString("<BALL>", 80, 440);
-    buf_gc.drawString("    02", 100, 450);
+    buf_gc.drawString(String.valueOf(ball.hp), 100, 450);
     buf_gc.fillRect(200,0,10,imgH);
     buf_gc.fillRect(790,0,10,imgH);
     if (mode == 2) buf_gc.setColor(bgCol2);
@@ -116,57 +159,12 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.fillRect(202,0,6,imgH);
     buf_gc.fillRect(792,0,6,imgH);
   }
-
-  public void Flipper() {
-    if(ftr.lflag == true){if(lFlp < 2) lFlp++;}
-    else{if(0<lFlp) lFlp--;}
-    if(ftr.rflag == true){if(rFlp < 2) rFlp++;}
-    else{if(0<rFlp) rFlp--;}
-    buf_gc.setColor(FlpCol);
-    if (lFlp == 2) {
-      buf_gc.fillPolygon(new int[] {336-3,431,336+9}, new int[] {474,456,510-2},3);
-      buf_gc.setColor(Color.white);
-      buf_gc.drawLine(336-3,474,431,456);
-      buf_gc.drawLine(336+9,510-2,431,456);
-    } else if(lFlp == 1) {
-      buf_gc.fillPolygon(new int[] {336,436,336+6}, new int[] {474,474,510-1},3);
-      buf_gc.setColor(Color.white);
-      buf_gc.drawLine(336,474,436,474);
-      buf_gc.drawLine(336+6,510-1,436,474);
-    } else {
-      buf_gc.fillPolygon(new int[] {336+9,431,336-3}, new int[] {474+2,528,510},3);
-      buf_gc.setColor(Color.white);
-      buf_gc.drawLine(336+9,474+2,431,528);
-      buf_gc.drawLine(336-3,510,431,528);
-    }
-    buf_gc.setColor(FlpCol);
-    if (rFlp == 2){
-      buf_gc.fillPolygon(new int[] {624+3,529,624-9}, new int[] {474,456,510-2},3);
-      buf_gc.setColor(Color.white);
-      buf_gc.drawLine(529,456,624+3,474);
-      buf_gc.drawLine(529,456,624-9,510-2);
-    } else if(rFlp == 1) {
-      buf_gc.fillPolygon(new int[] {624,524,624-6}, new int[] {474,474,510-1},3);
-      buf_gc.setColor(Color.white);
-      buf_gc.drawLine(524,474,624,474);
-      buf_gc.drawLine(524,474,624-6,510-1);
-    } else {
-      buf_gc.fillPolygon(new int[] {624-9,529,624+3}, new int[] {474+2,528,510},3);
-      buf_gc.setColor(Color.white);
-      buf_gc.drawLine(529,528,624-9,474+2);
-      buf_gc.drawLine(529,528,624+3,510);
-    }
-    buf_gc.setColor(FlpCol); buf_gc.fillOval(318,474,36,36); buf_gc.fillOval(606,474,36,36);
-    buf_gc.setColor(Color.white); buf_gc.drawOval(318,474,36,36); buf_gc.drawOval(606,474,36,36);
-    buf_gc.setColor(Color.white);
-  }
-
   public void map1() {
     /* フリッパー左 */
     buf_gc.setColor(bgCol1);
-    buf_gc.fillPolygon(new int[] {246,246,270,318,318,282,282}, new int[] {600,432,408,456,474,528,600},7);
+    buf_gc.fillPolygon(new int[] {246,246,270,318,318}, new int[] {600,432,408,456,600},5);
     buf_gc.setColor(Color.white);
-    buf_gc.drawPolygon(new int[] {246,246,270,318,318,282,282}, new int[] {600,432,408,456,474,528,600},7);
+    buf_gc.drawPolygon(new int[] {246,246,270,318,318}, new int[] {600,432,408,456,600},5);
     /* 外郭 */
     buf_gc.setColor(bgCol1);
     buf_gc.fillRect(210,0,580,72);
@@ -191,16 +189,15 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.drawLine(420,182,318,284); buf_gc.drawLine(318,284,282,284); buf_gc.drawLine(282,284,246,222);
     /* フリッパー右 */
     buf_gc.setColor(bgCol1);
-    buf_gc.fillPolygon(new int[] {678,678,642,642,690,714,738,714,750,750,690,672,630,540,540,602,640,754,754},
-                       new int[] {600,528,474,456,408,432,408,384,348,218,158,158,182,182,144,108,108,222,600},19);
+    buf_gc.fillPolygon(new int[] {642,642,690,714,738,714,750,750,690,672,630,540,540,602,640,754,754},
+                       new int[] {600,456,408,432,408,384,348,218,158,158,182,182,144,108,108,222,600},17);
     buf_gc.fill(new QuadCurve2D.Double(640,108,754,108,754,222)); // 右上内円
     buf_gc.setColor(Color.black);
     buf_gc.fill(new QuadCurve2D.Double(714,432,738,432,738,408)); // 再発射
     buf_gc.fill(new QuadCurve2D.Double(714,384,750,384,750,348)); // 右下円
     buf_gc.fill(new QuadCurve2D.Double(750,218,750,158,690,158)); // 右上内円
     buf_gc.setColor(Color.white);
-    buf_gc.drawLine(678,600,678,528); buf_gc.drawLine(678,528,642,474); buf_gc.drawLine(642,474,642,456);
-    buf_gc.drawLine(642,456,690,408); buf_gc.drawLine(690,408,714,432);
+    buf_gc.drawLine(642,600,642,456); buf_gc.drawLine(642,456,690,408); buf_gc.drawLine(690,408,714,432);
     buf_gc.draw(new QuadCurve2D.Double(714,432,738,432,738,408)); // 再発射
     buf_gc.drawLine(738,408,714,384); buf_gc.draw(new QuadCurve2D.Double(714,384,750,384,750,348)); // 右下円
     buf_gc.drawLine(750,348,750,218); buf_gc.draw(new QuadCurve2D.Double(750,218,750,158,690,158)); // 右上内円
@@ -219,32 +216,43 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.draw(new QuadCurve2D.Double(690,336,690,348,702,348));
     buf_gc.draw(new QuadCurve2D.Double(702,348,714,348,714,336)); buf_gc.drawLine(714,336,714,218);
     buf_gc.draw(new QuadCurve2D.Double(714,218,714,194,690,194));
-
+    /* 上のちょんちょん */
+    buf_gc.setColor(new Color(100,200,250));
+    buf_gc.fillPolygon(new int[] {501,498,498,501,504,504},new int[] {144,147,170,173,170,147},6);
+    buf_gc.fillPolygon(new int[] {459,456,456,459,462,462},new int[] {144,147,170,173,170,147},6);
+    buf_gc.setColor(Color.white);
+    buf_gc.drawPolygon(new int[] {501,498,498,501,504,504},new int[] {144,147,170,173,170,147},6);
+    buf_gc.drawPolygon(new int[] {459,456,456,459,462,462},new int[] {144,147,170,173,170,147},6);
   }
 
   public void map2(){
+    /* 左上島 */
     buf_gc.setColor(bgCol1);
-    buf_gc.fillPolygon(new int[] {246,246,264,282,282},new int[] {0,17,48,39,0},5); //左上島
-    buf_gc.fill(new QuadCurve2D.Double(264,48,282,48,282,30));
+    buf_gc.fillPolygon(new int[] {246,246,264,282,318,318},new int[] {-1,17,48,48,12,-1},6);
+    buf_gc.setColor(Color.white);
+    buf_gc.drawPolygon(new int[] {246,246,264,282,318,318},new int[] {-1,17,48,48,12,-1},6);
+    /* 左端 */
+    buf_gc.setColor(bgCol1);
     buf_gc.fillPolygon(new int[] {210,210,318},new int[] {492,600,600},3); // 左下
     buf_gc.fillPolygon(new int[] {210,250,226,226,210},new int[] {340,300,276,76,48},5);
-    buf_gc.fillPolygon(new int[] {750,750,642},new int[] {492,600,600},3); // 右下
-    buf_gc.fillRect(750,410,40,190);
-    buf_gc.fillPolygon(new int[] {750,750,710,734,734,746,746,728,702,678,678,754,754},
-                       new int[] {410,340,300,276, 87, 72, 66, 48, 48, 24,  0,  0,410},13);
-    buf_gc.setColor(Color.black);
-    buf_gc.fill(new QuadCurve2D.Double(746,66,746,48,728,48));
     buf_gc.setColor(Color.white);
-    buf_gc.drawLine(246,0,246,17); buf_gc.drawLine(246,17,264,48); //左上島
-    buf_gc.draw(new QuadCurve2D.Double(264,48,282,48,282,30)); buf_gc.drawLine(282,30,282,0);
     buf_gc.drawLine(210,492,318,600); // 左下
     buf_gc.drawLine(210,340,250,300); buf_gc.drawLine(250,300,226,276);
     buf_gc.drawLine(226,276,226,76); buf_gc.drawLine(226,76,210,48);
+    /* 右端 */
+    buf_gc.setColor(bgCol1);
+    buf_gc.fillPolygon(new int[] {750,750,642},new int[] {492,600,600},3); // 右下
+    buf_gc.fillRect(750,410,40,190);
+    buf_gc.fillPolygon(new int[] {750,750,710,734,734,746,746,728,678,642,642,754,754},
+                       new int[] {410,340,300,276, 87, 72, 66, 48, 48, 12,  0,  0,410},13);
+    buf_gc.setColor(Color.black);
+    buf_gc.fill(new QuadCurve2D.Double(746,66,746,48,728,48));
+    buf_gc.setColor(Color.white);
     buf_gc.drawLine(750,492,642,600); // 右下
     buf_gc.drawLine(750,600,750,340); buf_gc.drawLine(750,340,710,300); buf_gc.drawLine(710,300,734,276);
     buf_gc.drawLine(734,276,734,87); buf_gc.drawLine(734,87,746,72); buf_gc.drawLine(746,72,746,66);
     buf_gc.draw(new QuadCurve2D.Double(746,66,746,48,728,48)); // 右上円
-    buf_gc.drawLine(728,48,702,48); buf_gc.drawLine(702,48,678,24);buf_gc.drawLine(678,24,678,0);
+    buf_gc.drawLine(728,48,678,48); buf_gc.drawLine(678,48,642,12);buf_gc.drawLine(642,12,642,0);
     buf_gc.drawLine(754,410,754,0);
     buf_gc.setColor(Color.black); buf_gc.fillRect(754,416,36,100);
     /* レーン */
@@ -256,6 +264,21 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.fillPolygon(new int[] {714,714,642,640,710,710},new int[] {379,432,474,470+1,428+1,379},6); // 右
     buf_gc.drawPolygon(new int[] {286,286,318},new int[] {379,416,434},3); // 左三角
     buf_gc.drawPolygon(new int[] {674,674,642},new int[] {379,416,434},3); // 右三角
+    /* 上のちょんちょん */
+    buf_gc.setColor(new Color(100,200,250));
+    buf_gc.fillPolygon(new int[] {585,582,582,585,588,588},new int[] {100,103,126,129,126,103},6);
+    buf_gc.fillPolygon(new int[] {543,540,540,543,546,546},new int[] {100,103,126,129,126,103},6);
+    buf_gc.fillPolygon(new int[] {501,498,498,501,504,504},new int[] {100,103,126,129,126,103},6);
+    buf_gc.fillPolygon(new int[] {459,456,456,459,462,462},new int[] {100,103,126,129,126,103},6);
+    buf_gc.fillPolygon(new int[] {417,414,414,417,420,420},new int[] {100,103,126,129,126,103},6);
+    buf_gc.fillPolygon(new int[] {375,372,372,375,378,378},new int[] {100,103,126,129,126,103},6);
+    buf_gc.setColor(Color.white);
+    buf_gc.drawPolygon(new int[] {585,582,582,585,588,588},new int[] {100,103,126,129,126,103},6);
+    buf_gc.drawPolygon(new int[] {543,540,540,543,546,546},new int[] {100,103,126,129,126,103},6);
+    buf_gc.drawPolygon(new int[] {501,498,498,501,504,504},new int[] {100,103,126,129,126,103},6);
+    buf_gc.drawPolygon(new int[] {459,456,456,459,462,462},new int[] {100,103,126,129,126,103},6);
+    buf_gc.drawPolygon(new int[] {417,414,414,417,420,420},new int[] {100,103,126,129,126,103},6);
+    buf_gc.drawPolygon(new int[] {375,372,372,375,378,378},new int[] {100,103,126,129,126,103},6);
   }
 
   public void map3(){
@@ -280,13 +303,11 @@ public class GameMaster extends Canvas implements KeyListener {
       ftr.lflag = true; // フラグを立てる
       break;
     case KeyEvent.VK_J: // [J]キーが押されたら
+      if(mode==1&&spring<40&&750<ball.x&&370<ball.y)spring++;
       ftr.rflag = true; // フラグを立てる
       break;
     case KeyEvent.VK_SPACE: // スペースキーが押されたら
       ftr.sflag = true; // フラグを立てる
-      if (this.mode < 0){
-        this.mode++;
-      }
       break;
     case KeyEvent.VK_F1: // [F1]キーが押されたら
       ftr.f1flag = true; // フラグを立てる
@@ -315,6 +336,8 @@ public class GameMaster extends Canvas implements KeyListener {
       break;
     case KeyEvent.VK_J: // [J]キーが離されたら
       ftr.rflag = false; // フラグを降ろす
+      if(spring>0&&ball.y>=410-35) ball.dy=-spring;
+      spring=0;
       break;
     case KeyEvent.VK_SPACE: // スペースキーが離されたら
       ftr.sflag = false; // フラグを降ろす
