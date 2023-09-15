@@ -82,13 +82,12 @@ public class GameMaster extends Canvas implements KeyListener {
       SBomb[0].move(buf_gc,imgW, imgH);
       ball.move(buf_gc,imgW, imgH);
       for (i=0;i<chipNum;i++ ) if(chip[i].hp>0) ball.collisionCheck(chip[i],100);
-      if(ball.collisionCheck(SBomb[0],100)==true) {
-        if (Math.abs(SBomb[0].x+25-ball.x-15)<=3) ball.dy = -1*ball.dy;
-        else if (Math.abs(SBomb[0].y+25-ball.y-15)<=3) ball.dx = -1*ball.dx;
-        else {
-          ball.dx = -1*ball.dx;
-          ball.dy = -1*ball.dy;
-        }
+      for (i=0;i<1;i++) if (ball.collisionCheck(SBomb[i],100)==true) {
+        double v=Math.sqrt(Math.pow(ball.dx,2)+Math.pow(ball.dy,2));
+        double alph = Math.atan2(ball.dx,ball.dy);
+        double beta = Math.atan2(SBomb[i].x+SBomb[i].w-ball.x-ball.w,SBomb[i].y+SBomb[i].w-ball.y-ball.w);
+        ball.dx = -1.1*v*Math.sin(2*beta-alph);
+        ball.dy = -1.1*v*Math.cos(2*beta-alph);
       }
       ChangeMode();
       break;
@@ -109,8 +108,11 @@ public class GameMaster extends Canvas implements KeyListener {
         ObjReSet();
       }
       for (i=1;i<4;i++) if (ball.collisionCheck(SBomb[i],100)==true) {
-        ball.dx = -1*ball.dx;
-        ball.dy = -1*ball.dy;
+        double v=Math.sqrt(Math.pow(ball.dx,2)+Math.pow(ball.dy,2));
+        double alph = Math.atan2(ball.dx,ball.dy);
+        double beta = Math.atan2(SBomb[i].x+SBomb[i].w-ball.x-ball.w,SBomb[i].y+SBomb[i].w-ball.y-ball.w);
+        ball.dx = -1.1*v*Math.sin(2*beta-alph);
+        ball.dy = -1.1*v*Math.cos(2*beta-alph);
       }
       ChangeMode();
       break;
@@ -206,23 +208,21 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.draw(new QuadCurve2D.Double(640,108,754,108,754,222)); // 右上外円
     buf_gc.drawLine(754,222,754,600);
     /* 右島 */
-    buf_gc.setColor(bgCol2);
-    buf_gc.fill(new QuadCurve2D.Double(690,336,690,348,702,348));
-    buf_gc.fill(new QuadCurve2D.Double(702,348,714,348,714,336));
-    buf_gc.fill(new QuadCurve2D.Double(714,218,714,194,690,194));
+    buf_gc.setColor(bgCol2); buf_gc.fillOval(690,324,24,24);
+    buf_gc.setColor(Color.white); buf_gc.drawOval(690,324,24,24);
+    buf_gc.setColor(bgCol2); buf_gc.fill(new QuadCurve2D.Double(714,218,714,194,690,194));
     buf_gc.fillPolygon(new int[] {690,648,690,690,702,714,714},new int[] {194,218,260,336,348,336,218},7);
     buf_gc.setColor(Color.white);
     buf_gc.drawLine(690,194,648,218); buf_gc.drawLine(648,218,690,260); buf_gc.drawLine(690,260,690,336);
-    buf_gc.draw(new QuadCurve2D.Double(690,336,690,348,702,348));
-    buf_gc.draw(new QuadCurve2D.Double(702,348,714,348,714,336)); buf_gc.drawLine(714,336,714,218);
-    buf_gc.draw(new QuadCurve2D.Double(714,218,714,194,690,194));
+    buf_gc.drawLine(714,336,714,218); buf_gc.draw(new QuadCurve2D.Double(714,218,714,194,690,194));
     /* 上のちょんちょん */
-    buf_gc.setColor(new Color(100,200,250));
-    buf_gc.fillPolygon(new int[] {501,498,498,501,504,504},new int[] {144,147,170,173,170,147},6);
-    buf_gc.fillPolygon(new int[] {459,456,456,459,462,462},new int[] {144,147,170,173,170,147},6);
-    buf_gc.setColor(Color.white);
-    buf_gc.drawPolygon(new int[] {501,498,498,501,504,504},new int[] {144,147,170,173,170,147},6);
-    buf_gc.drawPolygon(new int[] {459,456,456,459,462,462},new int[] {144,147,170,173,170,147},6);
+    for (i=0;i<2;i++) dia(456+42*i,144);
+    buf_gc.drawString("1000",480-13,108);
+    for (i=0;i<2;i++) buf_gc.drawString("500",428+84*i,128);
+    /* 上の逆流防止弁 */
+    buf_gc.setColor(new Color(200,200,200));
+    buf_gc.fillRect(350-4,72,4,36);
+    buf_gc.fillRect(640,72,4,36);
   }
 
   public void map2(){
@@ -265,27 +265,21 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.drawPolygon(new int[] {286,286,318},new int[] {379,416,434},3); // 左三角
     buf_gc.drawPolygon(new int[] {674,674,642},new int[] {379,416,434},3); // 右三角
     /* 上のちょんちょん */
-    buf_gc.setColor(new Color(100,200,250));
-    buf_gc.fillPolygon(new int[] {585,582,582,585,588,588},new int[] {100,103,126,129,126,103},6);
-    buf_gc.fillPolygon(new int[] {543,540,540,543,546,546},new int[] {100,103,126,129,126,103},6);
-    buf_gc.fillPolygon(new int[] {501,498,498,501,504,504},new int[] {100,103,126,129,126,103},6);
-    buf_gc.fillPolygon(new int[] {459,456,456,459,462,462},new int[] {100,103,126,129,126,103},6);
-    buf_gc.fillPolygon(new int[] {417,414,414,417,420,420},new int[] {100,103,126,129,126,103},6);
-    buf_gc.fillPolygon(new int[] {375,372,372,375,378,378},new int[] {100,103,126,129,126,103},6);
-    buf_gc.setColor(Color.white);
-    buf_gc.drawPolygon(new int[] {585,582,582,585,588,588},new int[] {100,103,126,129,126,103},6);
-    buf_gc.drawPolygon(new int[] {543,540,540,543,546,546},new int[] {100,103,126,129,126,103},6);
-    buf_gc.drawPolygon(new int[] {501,498,498,501,504,504},new int[] {100,103,126,129,126,103},6);
-    buf_gc.drawPolygon(new int[] {459,456,456,459,462,462},new int[] {100,103,126,129,126,103},6);
-    buf_gc.drawPolygon(new int[] {417,414,414,417,420,420},new int[] {100,103,126,129,126,103},6);
-    buf_gc.drawPolygon(new int[] {375,372,372,375,378,378},new int[] {100,103,126,129,126,103},6);
+    for (i=0;i<6;i++) dia(372+42*i,100);
   }
 
-  public void map3(){
+  public void map3() {
     buf_gc.setColor(bgCol2);
     buf_gc.fillRect(210,0,580,150);
     buf_gc.setColor(new Color(255,150,0));
     buf_gc.fillRect(240,0,520,150);
+  }
+
+  void dia(int x,int y) {
+    buf_gc.setColor(new Color(100,200,250)); buf_gc.fillOval(x,y,6,6); buf_gc.fillOval(x,y+23,6,6);
+    buf_gc.setColor(Color.white); buf_gc.drawOval(x,y,6,6); buf_gc.drawOval(x,y+23,6,6);
+    buf_gc.setColor(new Color(100,200,250)); buf_gc.fillRect(x,y+3,6,23);
+    buf_gc.setColor(Color.white); buf_gc.drawLine(x,y+3,x,y+26); buf_gc.drawLine(x+6,y+3,x+6,y+26);
   }
   // ■ メソッド (Canvas)
   public void update(Graphics gc) {

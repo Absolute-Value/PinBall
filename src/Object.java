@@ -19,7 +19,7 @@ abstract class Object {
   abstract void revive();
 
   boolean collisionCheck(Object obj,int score){
-    if (Math.pow(this.x+this.w-obj.x-obj.w,2)+Math.pow(this.y+this.w-obj.y-obj.w,2)<=Math.pow(this.w+obj.w,2)) {
+    if (Math.pow(this.x+this.w-obj.x-obj.w,2)+Math.pow(this.y+this.w-obj.y-obj.w,2)<=Math.pow(this.w+obj.w,2)&&obj.hp>0) {
       obj.hp--;
       GameMaster.Score_1P+=score;
       return true;
@@ -47,7 +47,7 @@ class ScoreBomb extends Object {
       buf.setColor(Color.white);
       buf.fillOval(x+5,y+5,2*(w-5),2*(w-5));
       buf.setColor(Color.black);
-      buf.drawString("100",x+15,y+w+5);
+      buf.drawString("100",x+w-10,y+w+5);
     }
   }
   void revive() {
