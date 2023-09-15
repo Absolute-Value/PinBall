@@ -1,6 +1,6 @@
 import java.awt.*;
 
-abstract class Object {
+abstract class Object extends Canvas {
   int x;
   int y;
   int w;
@@ -45,7 +45,15 @@ class ScoreBomb extends Object {
       buf.setColor(col);
       buf.fillOval(x,y,2*w,2*w);
       buf.setColor(Color.white);
-      buf.fillOval(x+5,y+5,2*(w-5),2*(w-5));
+      buf.fillOval(x+6,y+6,2*(w-6),2*(w-6));
+      buf.setColor(Color.black);
+      buf.drawString("100",x+w-10,y+w+5);
+    }
+    if (hp==0) {
+      buf.setColor(col);
+      buf.fillOval(x+3,y+3,2*(w-3),2*(w-3));
+      buf.setColor(Color.white);
+      buf.fillOval(x+6,y+6,2*(w-6),2*(w-6));
       buf.setColor(Color.black);
       buf.drawString("100",x+w-10,y+w+5);
     }

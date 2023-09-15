@@ -100,7 +100,7 @@ public class GameMaster extends Canvas implements KeyListener {
         SBomb[i].move(buf_gc,imgW, imgH);
       }
       ball.move(buf_gc,imgW, imgH);
-      buf_gc.drawString(String.valueOf(spring),700,300);
+      // buf_gc.drawString(String.valueOf(spring),700,300); // ばねのたわみと発射速度
       buf_gc.fillRect(757,421+spring,30,90-spring);
       if (ball.y>imgH) {
         ball.hp--; ball.revive();
@@ -191,19 +191,18 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.drawLine(420,182,318,284); buf_gc.drawLine(318,284,282,284); buf_gc.drawLine(282,284,246,222);
     /* フリッパー右 */
     buf_gc.setColor(bgCol1);
-    buf_gc.fillPolygon(new int[] {642,642,690,714,738,714,750,750,690,672,630,540,540,602,640,754,754},
-                       new int[] {600,456,408,432,408,384,348,218,158,158,182,182,144,108,108,222,600},17);
-    buf_gc.fill(new QuadCurve2D.Double(640,108,754,108,754,222)); // 右上内円
+    buf_gc.fillPolygon(new int[] {642,642,690,714,738,714,730,750,750,720,672,630,540,540,602,640,720+1,750+1,754,754},
+                       new int[] {600,456,408,432,408,384,384,364,194,158,158,182,182,144,108,108,158-1,194-1,222,600},20);
+    buf_gc.fill(new QuadCurve2D.Double(640,108,754,108,754,222)); // 右上外円
     buf_gc.setColor(Color.black);
     buf_gc.fill(new QuadCurve2D.Double(714,432,738,432,738,408)); // 再発射
-    buf_gc.fill(new QuadCurve2D.Double(714,384,750,384,750,348)); // 右下円
-    buf_gc.fill(new QuadCurve2D.Double(750,218,750,158,690,158)); // 右上内円
+    buf_gc.fillPolygon(new int[] {680,720,750,750},new int[] {158,158,194,230},4);
     buf_gc.setColor(Color.white);
     buf_gc.drawLine(642,600,642,456); buf_gc.drawLine(642,456,690,408); buf_gc.drawLine(690,408,714,432);
     buf_gc.draw(new QuadCurve2D.Double(714,432,738,432,738,408)); // 再発射
-    buf_gc.drawLine(738,408,714,384); buf_gc.draw(new QuadCurve2D.Double(714,384,750,384,750,348)); // 右下円
-    buf_gc.drawLine(750,348,750,218); buf_gc.draw(new QuadCurve2D.Double(750,218,750,158,690,158)); // 右上内円
-    buf_gc.drawLine(690,158,672,158); buf_gc.drawLine(672,158,630,182); buf_gc.drawLine(630,182,540,182);
+    buf_gc.drawLine(738,408,714,384); buf_gc.drawLine(714,384,730,384); buf_gc.drawLine(730,384,750,364);
+    buf_gc.drawLine(750,364,750,194); buf_gc.drawLine(750,194,720,158); // 右上内円
+    buf_gc.drawLine(720,158,672,158); buf_gc.drawLine(672,158,630,182); buf_gc.drawLine(630,182,540,182);
     buf_gc.drawLine(540,182,540,144); buf_gc.drawLine(540,144,602,108); buf_gc.drawLine(602,108,640,108);
     buf_gc.draw(new QuadCurve2D.Double(640,108,754,108,754,222)); // 右上外円
     buf_gc.drawLine(754,222,754,600);
@@ -225,7 +224,7 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.fillRect(640,72,4,36);
   }
 
-  public void map2(){
+  public void map2(){ // 下
     /* 左上島 */
     buf_gc.setColor(bgCol1);
     buf_gc.fillPolygon(new int[] {246,246,264,282,318,318},new int[] {-1,17,48,48,12,-1},6);
@@ -243,16 +242,12 @@ public class GameMaster extends Canvas implements KeyListener {
     buf_gc.setColor(bgCol1);
     buf_gc.fillPolygon(new int[] {750,750,642},new int[] {492,600,600},3); // 右下
     buf_gc.fillRect(750,410,40,190);
-    buf_gc.fillPolygon(new int[] {750,750,710,734,734,746,746,728,678,642,642,754,754},
-                       new int[] {410,340,300,276, 87, 72, 66, 48, 48, 12,  0,  0,410},13);
-    buf_gc.setColor(Color.black);
-    buf_gc.fill(new QuadCurve2D.Double(746,66,746,48,728,48));
+    buf_gc.fillPolygon(new int[] {750,750,710,734,734,642,642,754,754},
+                       new int[] {410,340,300,276,104, 12,  0,  0,410},9);
     buf_gc.setColor(Color.white);
     buf_gc.drawLine(750,492,642,600); // 右下
     buf_gc.drawLine(750,600,750,340); buf_gc.drawLine(750,340,710,300); buf_gc.drawLine(710,300,734,276);
-    buf_gc.drawLine(734,276,734,87); buf_gc.drawLine(734,87,746,72); buf_gc.drawLine(746,72,746,66);
-    buf_gc.draw(new QuadCurve2D.Double(746,66,746,48,728,48)); // 右上円
-    buf_gc.drawLine(728,48,678,48); buf_gc.drawLine(678,48,642,12);buf_gc.drawLine(642,12,642,0);
+    buf_gc.drawLine(734,276,734,104); buf_gc.drawLine(734,104,642,12); buf_gc.drawLine(642,12,642,0);
     buf_gc.drawLine(754,410,754,0);
     buf_gc.setColor(Color.black); buf_gc.fillRect(754,416,36,100);
     /* レーン */

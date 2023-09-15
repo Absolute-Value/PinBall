@@ -3,6 +3,7 @@ import java.awt.*;
 class Ball extends Object{
   // フィールド変数
   double v,alph,beta,dx,dy;
+  Image ImBal = getToolkit().getImage("./img/ball.png");
 
   Ball (int width, int height) {
     x=757; y=350;
@@ -14,6 +15,7 @@ class Ball extends Object{
   void move(Graphics buf,int width, int height) {
     buf.setColor(new Color(200,200,200));
     buf.fillOval(x, y, 2*w, 2*w);
+    buf.drawImage(ImBal,x,y,null);
     dy+=0.1;
     x=x+(int)dx;
     y=y+(int)dy;
@@ -105,8 +107,10 @@ class Ball extends Object{
       LineColl(642,456,642,600); // フリッパー右直線
       Line45Coll(642,456,690,408); // 右下斜め45左
       Line135Coll(690,408,714,432); // 右下斜め45右
-      LineColl(714,384,738,408); // 右下斜め45右上
-      LineColl(750,218,750,348); // 右中直線
+      Line45Coll(714,432,738,408);
+      Line315Coll(714,384,738,408); // 右下斜め45右上
+      LineColl(714,384,730,384); Line45Coll(730,384,750,364); LineColl(750,194,750,364);
+      Line315Coll(720,158,750,194); LineColl(672,158,720,158);
       LineColl(672,158,690,158);  Line225Coll(630,182,672,158); LineColl(540,182,630,182);
       LineColl(540,144,540,182); Line45Coll(540,144,602,108);
       LineColl(602,108,640,108); LineColl(754,222,754,600); // 右直線
@@ -114,8 +118,9 @@ class Ball extends Object{
       Line45Coll(648,218,690,194); // 右島左上斜め45
       Line315Coll(648,218,690,260); // 右島左上斜め45
       LineColl(690,260,690,336); // 右島左
-      LineColl(714,218,714,336); // 右島右
       ballColl(690,324,12);// 右島下
+      LineColl(714,218,714,336); // 右島右
+      if(690-15<x&&y<218+15) ballColl(666,194,24); // 右島右上
       /* 上のちょんちょん */
       for (int i=0;i<2;i++) DiaColl(456+42*i,144);
       if (222<y&&750<x) { // 発射装置内
@@ -140,9 +145,8 @@ class Ball extends Object{
       Line135Coll(210,492,318,600); // 左下斜め45
       /* 右端 */
       LineColl(642,0,642,12); // 右上直線
-      Line315Coll(642,12,678,48); // 右上斜め45
-      LineColl(678,48,750,48);
-      LineColl(734,87,734,276); // 右中直線
+      Line315Coll(642,12,734,104); // 右上斜め
+      LineColl(734,104,734,276); // 右中直線
       Line45Coll(710, 300, 734, 276); // 右中斜め135
       Line315Coll(710,300,750,340); // 右中斜め45
       LineColl(750,340,750,492); // 右下直線
@@ -152,10 +156,12 @@ class Ball extends Object{
       LineColl(246,379,250,379); // 左レーン上
       LineColl(250,379,250,429); // 左レーン右
       Line135Coll(250,428+1,320,470+1); // 左レーン斜め右上
+      if (y+w*(1+Math.cos(beta))-397.5>(434-397.5)*(x+w*(1-Math.sin(beta))-286)/(318-286)) Line315Coll(286,416,318,434); // 左レーン三角左下
       LineColl(286,379,286,416); // 左レーン三角左
-      Line135Coll(286,379,318,434); // 左レーン三角右上
-      Line45Coll(642,434,674,379); // 右レーン三角左上
+      if (y+w*(1-Math.cos(beta))-397.5<(434-397.5)*(x+w*(1+Math.sin(beta))-286)/(318-286)) Line135Coll(286,379,318,434); // 左レーン三角右上
+      if (y+w*(1-Math.cos(beta))-397.5<(434-397.5)*(x+w*(1+Math.sin(beta))-674)/(642-674)) Line45Coll(642,434,674,379); // 右レーン三角左上
       LineColl(674,379,674,416); // 右レーン三角右
+      if (y+w*(1+Math.cos(beta))-397.5>(434-397.5)*(x+w*(1-Math.sin(beta))-674)/(642-674)) Line225Coll(642,434,674,416); // 右レーン三角右下
       Line45Coll(642,470+1,710,428+1);// 右レーン斜め左上
       LineColl(710,379,710,429); // 右レーン左
       LineColl(710,379,714,379); // 右レーン上
@@ -186,7 +192,7 @@ class Ball extends Object{
       dx *= -0.9;
       if (x<=x1-w) x = x1-2*w;  else x = x1;
     } if(y1==y2 && x1-w<=x && x<=x2-w && y1-2*w<y && y<y1) {
-      dy *= -0.9;
+      dy *= -0.8;
       if (y<=y1-w) y = y1-2*w;  else y = y1;
     }
   }
