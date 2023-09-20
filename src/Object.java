@@ -13,7 +13,7 @@ abstract class Object extends Canvas { // 抽象クラス
   double dx,dy; // 速度
   int w, h;     // 幅の半分
   int hp;       // ヒットポイント（ゼロ以下で死亡）
-  Image cdBack = getToolkit().getImage("img/card_back.png"); // カードの画像をインポート
+  Image cdBack = getToolkit().getImage("../img/card_back.png"); // カードの画像をインポート
 
   // コンストラクタ
   Object () {

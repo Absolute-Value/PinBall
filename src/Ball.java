@@ -10,7 +10,7 @@ import java.applet.*;
 class Ball extends Object{
   // フィールド変数
   double v,alph,beta;
-  Image ImBal = getToolkit().getImage("img/ball.png"); // ボールの画像をインポート
+  Image ImBal = getToolkit().getImage("../img/ball.png"); // ボールの画像をインポート
   int bar, delaytime, delTime;
   boolean ba=false; // 上ステージの左右に動くオブジェクトもどちらの向きに動かすか決めるboolean
 

@@ -1,3 +1,3 @@
 #!/bin/bash
 cd src
-javac PinBall.java
+javac -d ../bin/ *.java

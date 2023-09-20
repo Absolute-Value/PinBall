@@ -63,14 +63,14 @@ public class GameMaster extends Canvas implements KeyListener {
     for (i=3;i<diamNum;i++) diam[i]= new Diam(477+42*(i-6),110); // 通過判定オブジェクトの実体を指定した座標で作成
     diam[10] = new Diam(717,260);                                // 通過判定オブジェクトの実体を指定した座標で作成
 
-    imgTitle = getToolkit().getImage("img/Title.jpg");    // タイトル画面の画像のインポート
-    imgGaOv  = getToolkit().getImage("img/GameOver.jpg"); // ゲームオーバー画面の画像のインポート
-    imgLet   = getToolkit().getImage("img/letter.png");   // 文字数字のインポート
-    imgSpr   = getToolkit().getImage("img/spring.jpg");   // ばね画像のインポート
-    muTitle  = Applet.newAudioClip(getClass().getResource("SE/title.wav")); // ゲーム開始時の音源のインポート
-    bomb     = Applet.newAudioClip(getClass().getResource("SE/bomb.wav")); // 音源bomb.wavをインポート
-    get      = Applet.newAudioClip(getClass().getResource("SE/get.wav")); // 音源get.wavをインポート
-    fill     = Applet.newAudioClip(getClass().getResource("SE/fill.wav")); // 音源fill.wavをインポート
+    imgTitle = getToolkit().getImage("../img/Title.jpg");    // タイトル画面の画像のインポート
+    imgGaOv  = getToolkit().getImage("../img/GameOver.jpg"); // ゲームオーバー画面の画像のインポート
+    imgLet   = getToolkit().getImage("../img/letter.png");   // 文字数字のインポート
+    imgSpr   = getToolkit().getImage("../img/spring.jpg");   // ばね画像のインポート
+    muTitle  = Applet.newAudioClip(getClass().getResource("../SE/title.wav")); // ゲーム開始時の音源のインポート
+    bomb     = Applet.newAudioClip(getClass().getResource("../SE/bomb.wav")); // 音源bomb.wavをインポート
+    get      = Applet.newAudioClip(getClass().getResource("../SE/get.wav")); // 音源get.wavをインポート
+    fill     = Applet.newAudioClip(getClass().getResource("../SE/fill.wav")); // 音源fill.wavをインポート
   }
 
   // ■ メソッド
