@@ -67,10 +67,10 @@ public class GameMaster extends Canvas implements KeyListener {
     imgGaOv  = getToolkit().getImage("../img/GameOver.jpg"); // ゲームオーバー画面の画像のインポート
     imgLet   = getToolkit().getImage("../img/letter.png");   // 文字数字のインポート
     imgSpr   = getToolkit().getImage("../img/spring.jpg");   // ばね画像のインポート
-    muTitle  = Applet.newAudioClip(getClass().getResource("../SE/title.wav")); // ゲーム開始時の音源のインポート
-    bomb     = Applet.newAudioClip(getClass().getResource("../SE/bomb.wav")); // 音源bomb.wavをインポート
-    get      = Applet.newAudioClip(getClass().getResource("../SE/get.wav")); // 音源get.wavをインポート
-    fill     = Applet.newAudioClip(getClass().getResource("../SE/fill.wav")); // 音源fill.wavをインポート
+    muTitle  = Applet.newAudioClip(getClass().getResource("SE/title.wav")); // ゲーム開始時の音源のインポート
+    bomb     = Applet.newAudioClip(getClass().getResource("SE/bomb.wav")); // 音源bomb.wavをインポート
+    get      = Applet.newAudioClip(getClass().getResource("SE/get.wav")); // 音源get.wavをインポート
+    fill     = Applet.newAudioClip(getClass().getResource("SE/fill.wav")); // 音源fill.wavをインポート
   }
 
   // ■ メソッド
